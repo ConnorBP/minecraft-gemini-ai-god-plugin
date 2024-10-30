@@ -17,7 +17,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import java.nio.file.Path;
 
 import javax.annotation.Nullable;
 
@@ -60,7 +59,6 @@ public final class GPTGOD extends JavaPlugin {
         saveConfig();
         getCommand("try").setExecutor(new DebugCommand());
         getCommand("nickname").setExecutor(new NicknameCommand());
-        Path worlds = getDataFolder().toPath().resolve("worlds");
         if (getConfig().getString("startingWorld").isBlank() || !getConfig().getBoolean("Rounds")) {
             String message = getConfig().getBoolean("Rounds")
                     ? "can't use Round system since startingWorld is not set. Go to %s to fix this."

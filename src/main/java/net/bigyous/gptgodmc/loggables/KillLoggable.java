@@ -9,13 +9,15 @@ public class KillLoggable extends BaseLoggable {
     String victim;
     boolean isValid;
 
+    @SuppressWarnings("null")
     public KillLoggable(EntityDeathEvent event) {
         super();
         Entity k = event.getEntity().getKiller();
         Entity v = event.getEntity();
+        // linter: not null checked here
         this.isValid = k != null && (isImportantCharacter(k) || isImportantCharacter(v));
         if (isValid) {
-            this.killer = k.getName();
+            this.killer = k.getName(); // k might be null warning supressed
             this.victim = v.getName();
         }
     }

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.bigyous.gptgodmc.GPT.Json.Content.Role;
-import net.bigyous.gptgodmc.GPT.Json.SafetySetting.HarmBlockThreshold;
-import net.bigyous.gptgodmc.GPT.Json.SafetySetting.HarmCategory;
+// import net.bigyous.gptgodmc.GPT.Json.SafetySetting.HarmBlockThreshold;
+// import net.bigyous.gptgodmc.GPT.Json.SafetySetting.HarmCategory;
 
 // Class to represent the structure of the JSON request to gemini
 // for generating content responses
@@ -105,6 +105,14 @@ public class GenerateContentRequest {
         this.tools = new Tool[] { tools };
     }
 
+    public Content getSystemInstruction() {
+        return systemInstruction;
+    }
+
+    public Tool[] getTools() {
+        return tools;
+    }
+
     public GenerateContentRequest setSystemInstruction(String systemInstruction) {
         this.systemInstruction = new Content(systemInstruction);
         return this;
@@ -136,12 +144,26 @@ public class GenerateContentRequest {
         return this;
     }
 
+    // removes an item from the context history and returns its value
+    public Content removeMessage(int index) {
+        return this.contents.remove(index);
+    }
+
+    // returns the message content at a given index
+    public Content getMessage(int index) {
+        return this.contents.get(index);
+    }
+
     public void replaceMessage(int index, String message) {
         this.contents.set(index, new Content(this.contents.get(index).getRole(), message));
     }
 
     public void replaceMessage(int index, List<String> message) {
         this.contents.set(index, new Content(this.contents.get(index).getRole(), message));
+    }
+
+    public void replaceMessage(int index, Content message) {
+        this.contents.set(index, message);
     }
 
     public void addMessage(Content.Role role, String content) {
@@ -179,4 +201,21 @@ public class GenerateContentRequest {
     public boolean isLatestMessageFromModel() {
         return contents.getLast().getRole() == Role.model;
     }
+
+    public boolean isEmpty() {
+        return this.contents.size() < 1;
+    }
+
+    public ArrayList<Content> getContents() {
+        return contents;
+    }
+
+    public ToolConfig getToolConfig() {
+        return toolConfig;
+    }
+
+    public GenerationConfig getGenerationConfig() {
+        return generationConfig;
+    }
+
 }

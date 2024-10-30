@@ -11,4 +11,13 @@ public class PlayerAudioInfo {
         this.minecraftTime = timeStamp;
         this.playerName = playerName;
     }
+
+    public String getMinecraftTime() {
+        return minecraftTime;
+    }
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
 }

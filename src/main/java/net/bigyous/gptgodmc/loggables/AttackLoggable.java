@@ -1,7 +1,5 @@
 package net.bigyous.gptgodmc.loggables;
 
-import java.time.Instant;
-
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;

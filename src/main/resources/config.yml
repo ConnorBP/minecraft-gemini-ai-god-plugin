@@ -1,13 +1,9 @@
 # Configuration file for gptgodmc
 # Make sure you update this before running!
 
-# your OpenAi API key from https://platform.openai.com/api-keys
-# the plugin won't work without this
-
-# not used anymore. just here for posterity
-openAiKey: ""
-
 # google gemini api key for main and secondary llm
+# the plugin won't work without this
+# https://aistudio.google.com/
 geminiKey: ""
 
 # for tts. Get key from https://console.sws.speechify.com/api-keys
@@ -28,26 +24,28 @@ Rounds: true
 # if empty or invalid the Round System won't work
 startingWorld: "island"
 
-# name of the gpt model to use
-# can be found here: https://openai.com/api/pricing/
-gpt-model-name: gpt-4o
-
 # gemini main model name
-# use flash for more rapid and cheaper responses
-model-name: gemini-1.5-pro
+# use gemini-1.5-flash for more rapid and cheaper responses
+# or use gemini-1.5-pro for more context and brains
+model-name: gemini-1.5-flash
 
 # secondary model (for transcriptions and command gen)
-secondary-model-name: gemini-1.5-flash
+# recomended models gemini-1.5-flash or the new gemini-1.5-flash-8b
+secondary-model-name: gemini-1.5-flash-8b
 
 # Gemini Model tempurature
 # turn up the heat
 # 1.0 or below is more behaved, above is more creative
 model-tempurature: 1.6
 
-# gpt model token limit
+# Gemini model token limit
+# flash can have up to 1mil and pro up to 2mil
 gpt-model-token-limit: 1000000
 
-# whether or not the mod will make calls to GPT
+# token limit for secondary model
+gpt-secondary-token-limit: 1000000
+
+# whether or not the mod will make calls to Gemini
 enabled: true
 
 # The gamemode, here are the current options:
@@ -55,7 +53,7 @@ enabled: true
 #[SANDBOX, DEATHMATCH]
 gamemode: SANDBOX
 
-# The potential behaviors to be given to GPT. A specified amount will be chosen to either be liked, or disliked.
+# The potential behaviors to be given to Gemini. A specified amount will be chosen to either be liked, or disliked.
 potentialBehaviors:
   [
     "killing animals",
@@ -89,26 +87,38 @@ dislikedBehaviors: 3
 # (in minutes)
 objectiveDecay: 6
 
-# the amount of time that will pass between calls to ChatGPT (in seconds)
+# the amount of time that will pass between calls to Gemini (in seconds)
+# keep in mind that gemini-pro free tier has a rate limit of 2 calls per min
+# so with forced actions enabled you must have this more than 60
 # can't be less that 1 second
-# I really don't reccomend going lower than 20
-# default 40
-rate: 40
+# AI may get pushy at lower than 20
+# if forced actons is enabled (double calls to api per run)
+# default: 30
+rate: 30
 
 # the amount of time that will pass between calls to transcribe voice chats
 # stops flickering microphones from spamming the api
 # and allows you to control how much spending you want for transcription
+# uses the secondary model for transcriptions
 transcription-rate: 20
-
-# The voice used by the TTS
-# https://platform.openai.com/docs/guides/text-to-speech/voice-options
-voice: onyx
-
-# The voice used by the speechify TTS
-speechify-voice: benjamin
 
 # use AI Text to Speech voice for god (uses OpenAI and will cost a bit more money)
 tts: true
 
-# write your own prompt here instead of the deafault prompts
+# The voice used by the speechify TTS
+# default: benjamin
+speechify-voice: benjamin
+
+# write your own game-mode prompt here instead of the deafault game-mode prompt
 promptOverride: ""
+# old gpt configurations
+
+# your OpenAi API key from https://platform.openai.com/api-keys
+# if openai chatgpt is enabled
+# openAiKey: ""
+# name of the gpt model to use (in the case that gpt is enabled)
+# can be found here: https://openai.com/api/pricing/
+# gpt-model-name: gpt-4o
+# The voice used by the TTS
+# https://platform.openai.com/docs/guides/text-to-speech/voice-options
+#voice: onyx

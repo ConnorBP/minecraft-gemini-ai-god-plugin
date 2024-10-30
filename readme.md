@@ -17,10 +17,10 @@ What's Changed:
 - [x] various bug fixes and codbase improvements
 - [x] added new decree function for the ai to drop floating commandments in the world if it is displeased
 - [x] added model tempurature configuration control to improve model creativity
+- [x] Rolling context expiry for new multi-turn when token limit is approaching
 
 Todo:
 
-- [ ] Rolling context expiry for new multi-turn when token limit is approaching
 - [ ] Maybe add option to choose between gemini and open ai?
 - [ ] Fix bug with events coming in after round restart
 - [ ] Give the AI eyes using the papermc ImageryAPI and gemini vison api (so the AI can decide if your monuments to its honor are ugly or not)

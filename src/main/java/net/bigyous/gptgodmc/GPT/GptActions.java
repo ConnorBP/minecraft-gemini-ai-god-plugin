@@ -1,11 +1,9 @@
 package net.bigyous.gptgodmc.GPT;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -14,7 +12,6 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -28,16 +25,13 @@ import net.bigyous.gptgodmc.GPTGOD;
 import net.bigyous.gptgodmc.Structure;
 import net.bigyous.gptgodmc.StructureManager;
 import net.bigyous.gptgodmc.WorldManager;
-import net.bigyous.gptgodmc.GPT.Json.Candidate;
-import net.bigyous.gptgodmc.GPT.Json.FunctionCall;
 import net.bigyous.gptgodmc.GPT.Json.FunctionDeclaration;
-import net.bigyous.gptgodmc.GPT.Json.GenerateContentResponse;
-import net.bigyous.gptgodmc.GPT.Json.Part;
 import net.bigyous.gptgodmc.GPT.Json.Schema;
 import net.bigyous.gptgodmc.GPT.Json.Tool;
 import net.bigyous.gptgodmc.interfaces.Function;
 import net.bigyous.gptgodmc.loggables.GPTActionLoggable;
-import net.bigyous.gptgodmc.utils.GPTUtils;
+import net.bigyous.gptgodmc.utils.BukkitUtils;
+import net.bigyous.gptgodmc.utils.CommandHelper;
 import net.bigyous.gptgodmc.utils.GptObjectiveTracker;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -132,6 +126,11 @@ public class GptActions {
                 Location location = StructureManager.hasStructure(position)
                                 ? StructureManager.getStructure(position).getLocation()
                                 : GPTGOD.SERVER.getPlayer(position).getLocation();
+                // try to get a safe location for the spawn
+                Location safeLocation = BukkitUtils.getSafeLocation(location, true, 256);
+                // if the safeLocation is not null, then use it instead of location
+                location = safeLocation == null ? location : safeLocation;
+
                 EntityType type = EntityType.fromName(entityName);
                 for (int i = 0; i < count; i++) {
                         double r = Math.random() / Math.nextDown(1.0);
@@ -190,13 +189,74 @@ public class GptActions {
                 String structure = gson.fromJson(argObject.get("structure"), String.class);
                 String blockType = gson.fromJson(argObject.get("block"), String.class);
                 Structure structureObj = StructureManager.getStructure(structure);
+                // blocktypes that we don't want god to accidentally transform
+                List<Material> protectedBlockTypes = Arrays.asList(
+                                Material.CHEST,
+                                Material.ENDER_CHEST,
+                                Material.TRAPPED_CHEST,
+                                Material.FURNACE,
+                                Material.CRAFTING_TABLE,
+                                Material.BLAST_FURNACE,
+                                Material.ENDER_CHEST,
+                                Material.ARMOR_STAND,
+                                Material.CAULDRON,
+                                Material.BREWING_STAND,
+                                Material.CARTOGRAPHY_TABLE,
+                                Material.FLETCHING_TABLE,
+                                Material.SMOKER,
+                                Material.BARREL,
+                                Material.GRINDSTONE,
+                                Material.COMPOSTER,
+                                Material.SMITHING_TABLE,
+                                Material.STONECUTTER,
+                                Material.BELL,
+                                Material.LANTERN,
+                                Material.SOUL_LANTERN,
+                                Material.CAMPFIRE,
+                                Material.SOUL_CAMPFIRE,
+                                Material.SHROOMLIGHT,
+                                Material.PLAYER_HEAD, Material.PIGLIN_HEAD, Material.DRAGON_HEAD, Material.CREEPER_HEAD,
+                                Material.ZOMBIE_HEAD,
+                                Material.WITHER_SKELETON_SKULL, Material.SKELETON_SKULL,
+                                // all doors as of 1.21.1
+                                Material.IRON_DOOR, Material.BIRCH_DOOR, Material.DARK_OAK_DOOR, Material.ACACIA_DOOR,
+                                Material.OAK_DOOR,
+                                Material.BAMBOO_DOOR, Material.CHERRY_DOOR, Material.COPPER_DOOR, Material.JUNGLE_DOOR,
+                                Material.SPRUCE_DOOR,
+                                Material.WARPED_DOOR, Material.CRIMSON_DOOR, Material.MANGROVE_DOOR,
+                                // all buttons as of 1.21.1
+                                Material.OAK_BUTTON, Material.BIRCH_BUTTON, Material.STONE_BUTTON,
+                                Material.ACACIA_BUTTON, Material.BAMBOO_BUTTON, Material.BAMBOO_BUTTON,
+                                Material.CHERRY_BUTTON, Material.JUNGLE_BUTTON, Material.SPRUCE_BUTTON,
+                                Material.WARPED_BUTTON, Material.CRIMSON_BUTTON, Material.DARK_OAK_BUTTON,
+                                Material.MANGROVE_BUTTON, Material.POLISHED_BLACKSTONE_BUTTON,
+                                // all trapdoors as of 1.21.1
+                                Material.IRON_TRAPDOOR, Material.BIRCH_TRAPDOOR, Material.DARK_OAK_TRAPDOOR,
+                                Material.ACACIA_TRAPDOOR, Material.OAK_TRAPDOOR,
+                                Material.BAMBOO_TRAPDOOR, Material.CHERRY_TRAPDOOR, Material.COPPER_TRAPDOOR,
+                                Material.JUNGLE_TRAPDOOR, Material.SPRUCE_TRAPDOOR,
+                                Material.WARPED_TRAPDOOR, Material.CRIMSON_TRAPDOOR, Material.MANGROVE_TRAPDOOR,
+                                // all pressure plates as of 1.21.1
+                                Material.OAK_PRESSURE_PLATE, Material.BIRCH_PRESSURE_PLATE,
+                                Material.STONE_PRESSURE_PLATE, Material.ACACIA_PRESSURE_PLATE,
+                                Material.BAMBOO_PRESSURE_PLATE, Material.CHERRY_PRESSURE_PLATE,
+                                Material.JUNGLE_PRESSURE_PLATE, Material.SPRUCE_PRESSURE_PLATE,
+                                Material.WARPED_PRESSURE_PLATE, Material.CRIMSON_PRESSURE_PLATE,
+                                Material.DARK_OAK_PRESSURE_PLATE, Material.MANGROVE_PRESSURE_PLATE,
+                                Material.HEAVY_WEIGHTED_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
+                                Material.POLISHED_BLACKSTONE_PRESSURE_PLATE,
+                                Material.LEVER);
                 if (structureObj == null) {
                         EventLogger.addLoggable(new GPTActionLoggable(
                                         "tried to transform non existant structure \"" + structure + "\""));
                         return;
                 }
                 structureObj.getBlocks()
-                                .forEach((Block b) -> b.setType(Material.matchMaterial(blockType)));
+                                .forEach((Block b) -> {
+                                        if (!protectedBlockTypes.contains(b.getType())) {
+                                                b.setType(Material.matchMaterial(blockType));
+                                        }
+                                });
                 EventLogger.addLoggable(
                                 new GPTActionLoggable(
                                                 String.format("turned all the blocks in Structure %s to %s", structure,
@@ -214,7 +274,10 @@ public class GptActions {
                 }
                 Location spawn = player.getRespawnLocation() != null ? player.getRespawnLocation()
                                 : WorldManager.getCurrentWorld().getSpawnLocation();
-                player.teleport(spawn);
+                if(!BukkitUtils.safeTeleport(player, spawn)) {
+                        // fallback to regular if it fails for now
+                        player.teleport(spawn);
+                }
                 player.setGameMode(GameMode.SURVIVAL);
                 EventLogger.addLoggable(new GPTActionLoggable(String.format("revived %s", playerName)));
         };
@@ -228,7 +291,8 @@ public class GptActions {
                 Location destination = StructureManager.hasStructure(destName)
                                 ? StructureManager.getStructure(destName).getLocation()
                                 : GPTGOD.SERVER.getPlayer(destName).getLocation();
-                player.teleport(destination);
+                
+                BukkitUtils.safeTeleport(player, destination);
                 EventLogger.addLoggable(
                                 new GPTActionLoggable(String.format("teleported %s to %s", playerName, destName)));
         };
@@ -260,7 +324,7 @@ public class GptActions {
         private static Function<JsonObject> decreeMessage = (JsonObject args) -> {
                 String name = gson.fromJson(args.get("playerName"), String.class);
                 String message = gson.fromJson(args.get("message"), String.class);
-                GptActions.executeCommand(String.format(
+                CommandHelper.executeCommand(String.format(
                                 "execute at %s run summon armor_stand ~ ~1 ~ {Invisible:1b,Invulnerable:1b,NoGravity:1b,Marker:1b,CustomName:'{\"text\":\"%s\",\"color\":\"red\",\"bold\":true,\"italic\":true,\"strikethrough\":false,\"underlined\":true}',CustomNameVisible:1b}",
                                 name, message));
         };
@@ -401,15 +465,19 @@ public class GptActions {
                                                                         new Schema(Schema.Type.INTEGER,
                                                                                         "the strength of this explosion where 4 is the strength of TNT"))),
                                                         detonateStructure)));
-        private static Map<String, FunctionDeclaration> speechFunctionMap = new HashMap<>(functionMap);
-        private static Map<String, FunctionDeclaration> actionFunctionMap = new HashMap<>(functionMap);
+        // private static Map<String, FunctionDeclaration> speechFunctionMap = new
+        // HashMap<>(functionMap);
+        // private static Map<String, FunctionDeclaration> actionFunctionMap = new
+        // HashMap<>(functionMap);
 
         private static Tool tools;
         // private static Tool[] actionTools;
         // private static Tool[] speechTools;
-        private static final List<String> speechActionKeys = Arrays.asList("announce", "whisper", "setObjective",
-                        "clearObjective", "decree");
-        private static final List<String> persistentActionKeys = Arrays.asList("command");
+        // private static final List<String> speechActionKeys =
+        // Arrays.asList("announce", "whisper", "setObjective", "clearObjective",
+        // "decree");
+        // private static final List<String> persistentActionKeys =
+        // Arrays.asList("command");
 
         // todo: experiment with wrapping a list of functions in a single tool for
         // google
@@ -450,37 +518,6 @@ public class GptActions {
         // speechTools = wrapFunctions(speechFunctionMap);
         // return speechTools;
         // }
-
-        private static void dispatch(String command, CommandSender console) {
-                // can't let GPT turn off mob spawning
-                if (command.contains("doMobSpawning")) {
-                        return;
-                }
-                command = command.charAt(0) == '/' ? command.substring(1) : command;
-                if (command.matches(".*\\bgive\\b.*") || command.contains(" in ")) {
-                        GPTGOD.SERVER.dispatchCommand(console, command);
-                } else {
-                        if (!(command.contains(" as ") || command.contains(" at "))
-                                        && (command.contains("~") || command.contains("^"))) {
-                                command = "execute at @r run " + command;
-                        }
-                        GPTGOD.SERVER.dispatchCommand(console,
-                                        String.format("execute in %s run %s", WorldManager.getDimensionName(),
-                                                        command));
-                }
-        }
-
-        public static void executeCommands(String[] commands) {
-                CommandSender console = GPTGOD.SERVER.getConsoleSender();
-                for (String command : commands) {
-                        dispatch(command, console);
-                }
-        }
-
-        public static void executeCommand(String command) {
-                CommandSender console = GPTGOD.SERVER.getConsoleSender();
-                dispatch(command, console);
-        }
 
         public static int run(String functionName, JsonObject jsonArgs) {
                 GPTGOD.LOGGER.info(

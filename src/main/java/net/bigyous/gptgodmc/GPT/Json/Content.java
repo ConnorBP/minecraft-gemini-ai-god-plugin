@@ -81,4 +81,13 @@ public class Content {
     public Role getRole() {
         return role;
     }
+
+    // calculates and returns the token count of this content
+    public int countTokens() {
+        int accumulator = 0;
+        for (Part part : this.parts) {
+            accumulator += part.countTokens();
+        }
+        return accumulator;
+    }
 }

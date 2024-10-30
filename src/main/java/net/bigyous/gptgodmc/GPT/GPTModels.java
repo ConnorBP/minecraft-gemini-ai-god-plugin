@@ -44,7 +44,7 @@ public class GPTModels {
             modelName = config.getString("secondary-model-name");
         } else {
             // for passivity
-            modelName = "gemini-1.5-flash";
+            modelName = "gemini-1.5-flash-8b";
         }
 
         int tokenLimit;
@@ -55,6 +55,7 @@ public class GPTModels {
             tokenLimit = switch (modelName) {
                 case "gemini-1.5-pro", "gemini-1.5-pro-002" -> 2000000;
                 case "gemini-1.5-flash" -> 850000;
+                case "gemini-1.5-flash-8b" -> 127500; // model 8b is remarkably cheap at less than 128k prompt length
                 default -> throw new RuntimeException(String.format(
                         "Could not automatically determine token limit for %s. Please set gpt-secondary-token-limit in the config.",
                         modelName));

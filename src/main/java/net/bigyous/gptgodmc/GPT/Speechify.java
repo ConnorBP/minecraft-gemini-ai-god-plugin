@@ -12,16 +12,11 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.bukkit.entity.Player;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 
 import de.maxhenkel.voicechat.api.VoicechatApi;
 import net.bigyous.gptgodmc.AudioFileManager;
@@ -91,11 +86,13 @@ public class Speechify {
                     .method("POST", HttpRequest.BodyPublishers.ofString(gson.create().toJson(body)))
                     .build();
 
+            String responseBody = "";
+
             try {
                 HttpResponse<String> response = HttpClient.newHttpClient().send(request,
                         HttpResponse.BodyHandlers.ofString());
-
-                SpeechifyGenerateResponse speech = gson.create().fromJson(response.body(),
+                responseBody = response.body();
+                SpeechifyGenerateResponse speech = gson.create().fromJson(responseBody,
                         SpeechifyGenerateResponse.class);
                 byte[] rawSamples = Base64.getDecoder().decode(speech.getAudio_data());
                 short[] pcmBytes = api.getAudioConverter()
@@ -108,6 +105,10 @@ public class Speechify {
                 GPTGOD.LOGGER.error("There was an error making a request to Speechify", e);
             } catch (UnsupportedAudioFileException e) {
                 GPTGOD.LOGGER.error("There was an error processing the Speechify audio", e);
+            } catch (JsonSyntaxException e) {
+                GPTGOD.LOGGER.error("There was an error processing the Speechify response " + responseBody, e);
+            } catch (JsonParseException e) {
+                GPTGOD.LOGGER.error("There was an error processing the Speechify response " + responseBody, e);
             }
         });
     }

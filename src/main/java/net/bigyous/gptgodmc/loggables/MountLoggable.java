@@ -20,4 +20,8 @@ public class MountLoggable extends BaseLoggable {
     public String getLog() {
         return String.format("%s mounted a %s", mounter, mountee);
     }
+
+    public boolean isValid() {
+        return isValid;
+    }
 }

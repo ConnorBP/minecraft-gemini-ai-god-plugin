@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.bigyous.gptgodmc.EventLogger;
 import net.bigyous.gptgodmc.GPTGOD;
 import net.bigyous.gptgodmc.StructureManager;
 import net.bigyous.gptgodmc.GPT.Json.FunctionDeclaration;
@@ -15,16 +16,35 @@ import net.bigyous.gptgodmc.GPT.Json.FunctionCall;
 import net.bigyous.gptgodmc.GPT.Json.Content.Role;
 import net.bigyous.gptgodmc.enums.GptGameMode;
 import net.bigyous.gptgodmc.interfaces.Function;
+import net.bigyous.gptgodmc.loggables.CommandLoggable;
+import net.bigyous.gptgodmc.utils.CommandHelper;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+
+import org.bukkit.command.CommandException;
 
 public class GenerateCommands {
         private static Gson gson = new Gson();
         private static Function<JsonObject> inputCommands = (JsonObject args) -> {
                 String[] commands = gson.fromJson(args.get("commands"), String[].class);
-                GptActions.executeCommands(commands);
+                try {
+                        String output = CommandHelper.executeCommands(commands);
+                        EventLogger.addLoggable(new CommandLoggable(output));
+                        GenerateCommands.gpt.addMessage("Command resulted in output: " + output);
+                } catch (CommandException e) {
+                        // give the command generation ai some feedback when it does something wrong
+                        String feedback = "encountered error trying to execute commands: " + e.getMessage();
+                        EventLogger.addLoggable(new CommandLoggable(e.getMessage()));
+                        GenerateCommands.gpt.addMessage(feedback);
+                        GPTGOD.LOGGER.error("Command Error Feedback: " + feedback);
+                } catch (RuntimeException e) {
+                        // give the command generation ai some feedback when it does something wrong
+                        String feedback = "encountered runtime error trying to execute commands: " + e.getMessage();
+                        EventLogger.addLoggable(new CommandLoggable(e.getMessage()));
+                        GenerateCommands.gpt.addMessage(feedback);
+                        GPTGOD.LOGGER.error("Command Runtime Error Feedback: " + feedback);
+                }
         };
 
         private static Map<String, FunctionDeclaration> functionMap = Map.of("inputCommands",
@@ -37,30 +57,27 @@ public class GenerateCommands {
         private static GptAPI gpt = new GptAPI(GPTModels.getSecondaryModel(), tools)
                         .setSystemContext(
                                         """
-                                                        You are a helpful assistant that will generate \
-                                                        one or more minecraft java edition commands based on a prompt inputted by the user, \
-                                                        even if the prompt seems impossible in minecraft try to approximate it as close as possible \
-                                                        with functioning minecraft commands. A wrong answer is better than no answer. \
-                                                        The commands must be compatible with minecraft. \
-                                                        There must always be at least one command in the response. \
-                                                        If the description calls for multiple events then make multiple commands but try not to go far past 24. \
-                                                        Try to offset dangerous spawns from the exact player position. \
-                                                        Make sure that title text displays fit in the screen. \
-                                                        Ensure that positionaly dependent code is executed relative to the specific player. \
-                                                        Only use a tool call in one json response, other responses will be ignored. \
-                                                        You MUST respond with a command. \
-                                                        The response must be valid minecraft command syntax. \
-                                                        Example command to communicate something physically in the world: execute at PlayerNameHere run summon armor_stand ~ ~1 ~ {Invisible:1b,Invulnerable:1b,NoGravity:1b,Marker:1b,CustomName:'{"text":"thou shalt not commit friendship","color":"red","bold":true,"italic":true,"strikethrough":false,"underlined":true}',CustomNameVisible:1b} \
+                                                        You are a helpful assistant that will generate
+                                                        one or more minecraft java edition commands based on a prompt inputted by the user,
+                                                        even if the prompt seems impossible in minecraft try to approximate it as close as possible
+                                                        with functioning minecraft commands. A wrong answer is better than no answer.
+                                                        The commands must be compatible with minecraft.
+                                                        There must always be at least one command in the response and no other types of responses.
+                                                        If the description calls for multiple events then make multiple commands but try not to go far past 24.
+                                                        Try to offset dangerous spawns from the exact player position.
+                                                        Make sure that title text displays fit in the screen.
+                                                        Ensure that positionaly dependent code is executed relative to the specific player.
+                                                        Only use a tool call in one json response, other responses will be ignored.
+                                                        The response must be valid minecraft command syntax.
                                                         Do not use item frames with books to display text.
-                                                        Pay VERY close attention to opening and closing delimeters in the syntax and make sure they match up
+                                                        Pay VERY close attention to opening and closing delimeters in the syntax and make sure they match up.
+                                                        Prefer the use of 'single quotes' over \\" or " when possible.
                                                         """)
                         .setTools(tools)
-                        // add an example of the correct type of output we are looking for
                         .addMessages(new String[] {
-                                        "Players: [MoistPyro]",
-                                        "Structures: NONE",
                                         "write Minecraft commands that: make a fireworks display all around MoistPyro"
                         })
+                        // add an example of the correct type of output we are looking for
                         .addResponse(new Content(Role.model,
                                         new Part[] {
                                                         new Part(new FunctionCall("inputCommands", JsonParser
@@ -101,7 +118,7 @@ public class GenerateCommands {
                                                                                 .toArray())),
                                 "PlayerNames")
                                 .addContext(String.format("Structures: %s", structures), "structures")
-                                .addLogs(String.format("write Minecraft commands that: %s", prompt), "prompt")
+                                .addMessage(String.format("write Minecraft commands that: %s", prompt))
                                 .send(functionMap);
         }
 }

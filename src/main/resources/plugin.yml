@@ -4,8 +4,8 @@ main: net.bigyous.gptgodmc.GPTGOD
 api-version: ${bukkit_api_version}
 prefix: gptgodmc
 authors: ["YOUS", "Anders", "ConnorBP"]
-description: Minecraft is not so godless anymore...
-website: https://bigyous.net
+description: Worship our AI overlords!
+website: https://segfault.site
 depend: [voicechat]
 
 commands:

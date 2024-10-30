@@ -31,4 +31,13 @@ public class FunctionCallingConfig {
         this.mode = mode;
         this.allowedFunctionNames = allowedFunctionNames;
     }
+
+    public Mode getMode() {
+        return mode;
+    }
+
+    public String[] getAllowedFunctionNames() {
+        return allowedFunctionNames;
+    }
+
 }

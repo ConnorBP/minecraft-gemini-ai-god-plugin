@@ -17,4 +17,49 @@ public class File {
     public String getUri() {
         return uri;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getMineType() {
+        return mineType;
+    }
+
+    public long getSizeBytes() {
+        return sizeBytes;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public String getUpdateTime() {
+        return updateTime;
+    }
+
+    public String getExpirationTime() {
+        return expirationTime;
+    }
+
+    public String getSha256Hash() {
+        return sha256Hash;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
 }

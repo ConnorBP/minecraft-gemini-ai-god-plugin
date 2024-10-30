@@ -40,7 +40,13 @@ public class InteractLoggable extends BaseLoggable {
 
     }
 
-    public boolean equals(InteractLoggable other) {
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+        final InteractLoggable other = (InteractLoggable) obj;
         // just found out the null object doesn't have .equals
         if (!this.isValid) {
             return false;

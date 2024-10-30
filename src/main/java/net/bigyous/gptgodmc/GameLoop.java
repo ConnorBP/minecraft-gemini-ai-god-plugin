@@ -6,7 +6,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import net.bigyous.gptgodmc.GPT.GPTModels;
 import net.bigyous.gptgodmc.GPT.GptAPI;
-import net.bigyous.gptgodmc.GPT.GptActions;
 import net.bigyous.gptgodmc.GPT.Personality;
 import net.bigyous.gptgodmc.GPT.Prompts;
 import net.bigyous.gptgodmc.utils.GPTUtils;
@@ -19,7 +18,6 @@ public class GameLoop {
     private static JavaPlugin plugin = JavaPlugin.getPlugin(GPTGOD.class);
     private static FileConfiguration config = JavaPlugin.getPlugin(GPTGOD.class).getConfig();
     private static GptAPI GPT_API;
-    private static int staticTokens = 0;
     private static int taskId;
     public static boolean isRunning = false;
     private static String PROMPT;
@@ -32,6 +30,7 @@ public class GameLoop {
                 Set interesting objectives to perform around the island, especially if none exist yet.
                 Make objectives interesting and creative, keeping in mind your likes and dislikes when you create them.
                 Reward players who complete their objectives within a minecraft day cycle and punish those who do not.
+                do NOT give out missions to a player which are already in the objectives list.
             """;
     private static String STYLE = """
                 Response Style:
@@ -79,9 +78,9 @@ public class GameLoop {
                 ROLEPLAY
         };
         GPT_API.setSystemContext(systemPrompt);
+        // set tool only mode
+        GPT_API.setToolOnlyAllTools();
 
-        // the roles system and user are each one token so we add two to this number
-        staticTokens = GPTUtils.countTokens(systemPrompt) + 2;
         isRunning = true;
         GPTGOD.LOGGER.info("GameLoop Started, the minecraft god has awoken");
     }
@@ -116,18 +115,19 @@ public class GameLoop {
             while (EventLogger.isGeneratingSummary() && !EventLogger.hasSummary()) {
                 Thread.onSpinWait();
             }
-            int nonLogTokens = staticTokens;
             if (EventLogger.hasSummary()) {
                 GPT_API.addLogs("Summary of Server History: " + EventLogger.getSummary(), "summary");
-                nonLogTokens += GPTUtils.countTokens(EventLogger.getSummary()) + 1;
             }
-            nonLogTokens += GPTUtils.calculateToolTokens(GptActions.GetAllTools());
-            EventLogger.cull(GPT_API.getMaxTokens() - nonLogTokens);
 
-            // List<String> logs = EventLogger.getLogs();
-            // GPT_API.addLogs(logs, "log");
-            // add logs in series with responses
+            // get logs since last flush then clear
             List<String> logs = EventLogger.flushLogs();
+
+            // event logger never needs to be culled since we are using dump to clear it
+            // EventLogger.cull(GPT_API.getMaxTokens() - nonLogTokens);
+            // instead we cull at GPT_API now with room for the next logs
+            GPT_API.cull(GPTUtils.countTokens(logs));
+
+            // add logs in series with responses
             GPT_API.addMessages(logs.toArray(new String[logs.size()]));
 
             if (!previousActions.isEmpty()) {
@@ -138,8 +138,18 @@ public class GameLoop {
             if (GPT_API.isLatestMessageFromModel()) {
                 GPT_API.addMessage("what would you like to do or say next?");
             }
+            GPT_API.send();
+
+            while (GPT_API.isSending()) {
+                Thread.onSpinWait();
+            }
+            GPT_API.addMessage(
+                    "Now, choose an interesting non-verbal action to perform which has not already been done.");
 
             GPT_API.send();
+
+            // Cannot determine why this was deemed necessary by yous
+            // Thread.currentThread().interrupt();
         }
 
     }

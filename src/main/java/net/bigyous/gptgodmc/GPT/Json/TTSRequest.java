@@ -12,4 +12,21 @@ public class TTSRequest {
         this.voice = voice;
         this.response_format = format;
     }
+
+    public String getModel() {
+        return model;
+    }
+
+    public String getInput() {
+        return input;
+    }
+
+    public String getVoice() {
+        return voice;
+    }
+
+    public String getResponse_format() {
+        return response_format;
+    }
+
 }

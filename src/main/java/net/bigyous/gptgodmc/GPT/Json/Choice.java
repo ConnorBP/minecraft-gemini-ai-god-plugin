@@ -17,4 +17,9 @@ public class Choice {
     public ResponseMessage getMessage() {
         return message;
     }
+
+    public boolean isLogprobs() {
+        return logprobs;
+    }
+
 }

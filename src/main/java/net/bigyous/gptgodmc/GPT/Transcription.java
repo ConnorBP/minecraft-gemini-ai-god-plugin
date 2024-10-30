@@ -90,7 +90,7 @@ public class Transcription {
 
         for (TranscriptionRequest req : playerAudioData) {
             gpt.addFileWithContext(String.format("audio fragment from player %s at time %s in the minecraft world",
-                    req.getPlayerName(), req.getTimeStamp()), "audio/mp3", req.getUri());
+                    req.getPlayerName(), req.getTimeStamp()), req.getFileMimeType(), req.getUri());
         }
 
         // send off the request without waiting for it.
@@ -123,7 +123,7 @@ public class Transcription {
                                     If no words are heard then you may return descriptions of what you hear inbetween of astrix cahracters e.x. *birds chirping* or *nothing*.
                                     DO NOT make stuff up, rather prefer an empty transcription over made up sounds if no words are heard.
                                     """)
-                    .addFileWithPrompt("transcribe this audio clip", "audio/mp3", file.getUri());
+                    .addFileWithPrompt("transcribe this audio clip", "audio/wav", file.getUri());
             String jsonBody = gson.toJson(contentRequest);
             System.out.println("jsonBody");
 

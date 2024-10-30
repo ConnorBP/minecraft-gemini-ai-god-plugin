@@ -83,7 +83,7 @@ public class VoiceMonitorPlugin implements VoicechatPlugin {
             AudioFileManager.deleteFile(buffer.getPlayer(), buffer.getBufferId());
             // if upload didn't fail we submit the file uri to the transcode queue
             if (uploadSuccess) {
-                if (!queue.add(new TranscriptionRequest(audioFile.getUri(), buffer.getPlayer().getName(),
+                if (!queue.add(new TranscriptionRequest(audioFile.getUri(), "audio/wav", buffer.getPlayer().getName(),
                         buffer.getTimeStamp()))) {
                     GPTGOD.LOGGER.warn("failed to add " + buffer.getPlayer().getName()
                             + "'s audio file to the transcription queue!");

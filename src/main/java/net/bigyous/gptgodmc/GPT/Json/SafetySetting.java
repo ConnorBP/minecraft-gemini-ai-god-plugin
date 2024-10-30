@@ -32,4 +32,13 @@ public class SafetySetting {
         this.category = category;
         this.threshold = threshold;
     }
+
+    public HarmCategory getCategory() {
+        return category;
+    }
+
+    public HarmBlockThreshold getThreshold() {
+        return threshold;
+    }
+
 }

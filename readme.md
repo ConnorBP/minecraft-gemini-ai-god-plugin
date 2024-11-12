@@ -25,6 +25,7 @@ What's Changed:
   - [x] Added player camera item (get with `/givecamera`) for fun photography for god missions
   - [x] Functioning structure rendering with automatic camera positioning
 - [x] Created sequential but non-blocking thread queue for the api wrapper class (AsyncTaskQueue in GptAPI)
+- [x] allow custom voices on speechify api (fetch available voices and check for customs by display name)
 
 Todo:
 
@@ -35,6 +36,7 @@ Todo:
 - [ ] Add ability to save favourite structures and scatter them across the new map on round start
 - [ ] Add option to renderer to ignore all blocks not in a structure (so that trees don't block the view and make the ai think you built a bush)
 - [ ] Give god a tool to give a user the camera they would otherwise get from `/givecamera`
+- [ ] tell gemini to output speech in SSML format for speechify
 
 ## Local Setup
 
@@ -63,6 +65,7 @@ Todo:
     - the flash model can go below 20 and performs quite nicely with the rapid feedback
     - for a fast-feedback experience try setting both models to `gemini-1.5-flash` and try a rate of about `rate: 20` to `rate: 30`
     - do NOT use `gemini-1.5-pro` as the secondary model
+- custom voices: if you create a custom voice on speechify, you can find it's real id (not display name) using the `/aitest voice list p` command to use as the voice id
 
 ![game-play example photo 2](./demo_images/god_hates_me.png)
 

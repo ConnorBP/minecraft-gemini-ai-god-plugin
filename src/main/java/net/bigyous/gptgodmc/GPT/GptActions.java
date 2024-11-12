@@ -316,7 +316,13 @@ public class GptActions {
                 String structure = gson.fromJson(argObject.get("structure"), String.class);
                 boolean setFire = gson.fromJson(argObject.get("setFire"), Boolean.class);
                 int power = gson.fromJson(argObject.get("power"), Integer.class);
-                StructureManager.getStructure(structure).getLocation().createExplosion(power, setFire, true);
+                Structure structureObj = StructureManager.getStructure(structure);
+                if(structureObj == null) {
+                        // tell god to stop being stupid
+                        EventLogger.addLoggable(new GPTActionLoggable(String.format("failed to detonate invalid structure name %s (no such structure found)", structure)));
+                        return;
+                }
+                structureObj.getLocation().createExplosion(power, setFire, true);
                 EventLogger.addLoggable(new GPTActionLoggable(String.format("detonated Structure: %s", structure)));
         };
         // private static Function<JsonObject> lookThroughPlayerEyes = (JsonObject args)

@@ -23,5 +23,5 @@ commands:
 
   aitest:
     description: a collection of helper tools for debuging certain advanced AI features like vision
-    usage: /aitest [structure(s)|render(r)|tts(t)] ex /aitest s list
+    usage: /aitest [structure(s)|tts(t)|voice(v)] ex /aitest s list
     permission: admin.debug.aitest
